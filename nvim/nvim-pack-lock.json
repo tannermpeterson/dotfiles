@@ -1,0 +1,29 @@
+{
+  "plugins": {
+    "fzf": {
+      "rev": "f7ae439ff5b2f8298716d39783a546db793b0625",
+      "src": "https://github.com/junegunn/fzf",
+      "version": "'f7ae439'"
+    },
+    "fzf.vim": {
+      "rev": "d2a59a992a2455f609c0fde2ebd84427ea8f919a",
+      "src": "https://github.com/junegunn/fzf.vim",
+      "version": "'d2a59a9'"
+    },
+    "nvim-lspconfig": {
+      "rev": "f6738ef65dabade340b473d4ff2a1ad3352c10e7",
+      "src": "https://github.com/neovim/nvim-lspconfig",
+      "version": "'f6738ef'"
+    },
+    "tokyonight.nvim": {
+      "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
+      "src": "https://github.com/folke/tokyonight.nvim",
+      "version": "'545d72c'"
+    },
+    "vim-tmux-navigator": {
+      "rev": "e41c431a0c7b7388ae7ba341f01a0d217eb3a432",
+      "src": "https://github.com/christoomey/vim-tmux-navigator",
+      "version": "'e41c431'"
+    }
+  }
+}
