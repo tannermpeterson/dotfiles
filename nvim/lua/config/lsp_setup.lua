@@ -1,30 +1,24 @@
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "c", "cpp" }, -- Only triggers for these file types
-  callback = function(args)
-  
-    local caps = vim.lsp.protocol.make_client_capabilities()
-    caps.textDocument.completion.completionItem.snippetSupport = true
-    caps.textDocument.completion.completionItem.resolveSupport = {
-        properties = {
-            'documentation',
-            'detail',
-            'additionalTextEdits',
-        }
+local caps = vim.lsp.protocol.make_client_capabilities()
+caps.textDocument.completion.completionItem.snippetSupport = true
+caps.textDocument.completion.completionItem.resolveSupport = {
+    properties = {
+        'documentation',
+        'detail',
+        'additionalTextEdits',
     }
+}
 
-    vim.lsp.start({
-        capabilities = caps,
-        cmd = { 
-            "clangd",
-            -- "-std=c++20",  -- TODO .clangd file
-            "--completion-style=detailed"
-        },
-        filetypes = { "c", "cpp" },
-        root_markers = { ".git" }
-        -- TODO compile_commands.json
-    })
-  end,
+vim.lsp.config("clangd", {
+    capabilities = caps,
+    cmd = {
+        "clangd",
+        "--completion-style=detailed"
+    },
+    filetypes = { "c", "cpp" },
+    root_markers = { ".clangd", "compile_commands.json", ".git" }
+    -- Other opts set in .clangd file
 })
+
 
 -- Create an autocommand that runs whenever an LSP client attaches to a buffer
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -41,7 +35,32 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- enable LSP completion
     if client and client:supports_method("textDocument/completion", event.buf) then
-        vim.lsp.completion.enable(true, client.id, event.buf, { autotrigger = true })
+        vim.lsp.completion.enable(true, client.id, event.buf, {
+            autotrigger = true,
+            convert = function(item)
+                -- Remove leading misc chars for abbr name,
+                -- and cap field to 25 chars
+                --local abbr = item.label
+                --abbr = abbr:match("[%w_.]+.*") or abbr
+                --abbr = #abbr > 25 and abbr:sub(1, 24) .. "…" or abbr
+                --
+                -- Remove return value
+                --local menu = ""
+
+                -- Only show abbr name, remove leading misc chars (bullets etc.),
+                -- and cap field to 15 chars
+                local abbr = item.label
+                abbr = abbr:gsub("%b()", ""):gsub("%b{}", "")
+                abbr = abbr:match("[%w_.]+.*") or abbr
+                abbr = #abbr > 25 and abbr:sub(1, 24) .. "…" or abbr
+
+                -- Cap return value field to 15 chars
+                local menu = item.detail or ""
+                menu = #menu > 25 and menu:sub(1, 24) .. "…" or menu
+
+                return { abbr = abbr, menu = menu }
+            end,
+        })
     end
 
     -- TODO make this work the way I want it (toggle with remap)
@@ -77,3 +96,4 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 vim.lsp.enable('clangd')
+vim.lsp.enable('lua_ls')

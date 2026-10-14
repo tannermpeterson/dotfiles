@@ -7,7 +7,7 @@
 vim.pack.add({
   { src = 'https://github.com/folke/tokyonight.nvim', version = '545d72c' },
   { src = 'https://github.com/neovim/nvim-lspconfig', version = 'f6738ef' },
-  { src = 'https://github.com/junegunn/fzf.vim', version = 'd2a59a9' },
+  { src = 'https://github.com/ibhagwan/fzf-lua', version = '6995a3f' },  -- TODO check out pickers?
   { src = 'https://github.com/junegunn/fzf', version = 'f7ae439' },
   { src = 'https://github.com/christoomey/vim-tmux-navigator', version = 'e41c431' }
 })
@@ -69,7 +69,7 @@ vim.g.mapleader = " "
 
 -- TODO learn how to use the autocomplete better (i.e. ctrl-x options)
 vim.o.autoread = true
-vim.o.complete = '.,w,b,o'
+vim.o.complete = '.,o,w,b,'
 vim.o.completeopt = 'menu,noselect,fuzzy,popup,preview'
 vim.o.autocomplete = true
 vim.o.autocompletedelay = 200
@@ -84,7 +84,6 @@ vim.diagnostic.config({
   },
   severity_sort = true, -- Sort diagnostics by severity (Errors first)
 })
-
 
 -- TODO is any of this needed? Is neo-tree needed? If so move this auto cmd
 -- This auto command reloads neo tree anytime that neovim gains focus so that new files will show up
@@ -127,8 +126,8 @@ vim.api.nvim_create_autocmd(
 -- NOTE: some remaps are in files under lua/config/
 
 -- TODO see how this feels
-vim.keymap.set("i", "<C-enter>", "<Esc>")
-vim.keymap.set("v", "<C-enter>", "<Esc>")
+vim.keymap.set("i", "<S-tab>", "<Esc>")
+vim.keymap.set("v", "<S-tab>", "<Esc>")
 
 -- move highlighted lines up and down
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
