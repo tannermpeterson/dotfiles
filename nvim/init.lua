@@ -77,42 +77,6 @@ vim.o.winborder = "rounded"
 vim.o.pummaxwidth = 70
 vim.o.pumheight = 7
 
-vim.diagnostic.config({
-  virtual_text = {
-    spacing = 4, -- Distance from the end of the line text
-    prefix = '■', -- The symbol shown before the error message
-  },
-  severity_sort = true, -- Sort diagnostics by severity (Errors first)
-})
-
--- TODO is any of this needed? Is neo-tree needed? If so move this auto cmd
--- This auto command reloads neo tree anytime that neovim gains focus so that new files will show up
-vim.api.nvim_create_autocmd({
-	-- "BufEnter",
-	-- "CursorHold",
-	-- "CursorHoldI",
-	"FocusGained",
-}, {
-	callback = function(ev)
-		if vim.api.nvim_get_mode() ~= "c" then
-			vim.cmd("checktime")
-		end
-
-		local find_buffer_by_type = function(type)
-			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-				local ft = vim.api.nvim_buf_get_option(buf, "filetype")
-				if ft == type then
-					return buf
-				end
-			end
-			return -1
-		end
-		if find_buffer_by_type("neo-tree") > 0 then
-			vim.cmd("Neotree show ")
-		end
-	end,
-	pattern = { "*" },
-})
 vim.api.nvim_create_autocmd(
 	{ "FileChangedShellPost" },
 	{ command = 'echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None', pattern = { "*" } }
@@ -187,3 +151,6 @@ vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help)
 
 require('config.fzf')
 require('config.lsp_setup')
+require('config.netrw')
+require('config.qflist')
+require('config.statusline')

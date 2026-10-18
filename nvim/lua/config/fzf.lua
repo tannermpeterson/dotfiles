@@ -11,7 +11,7 @@ fzf.setup({
   actions = {
     files = {
       ['enter'] = { fn = actions.file_edit, prefix = "deselect-all" },
-      ['ctrl-s'] = actions.file_sel_to_qf,
+      ['ctrl-s'] = actions.file_sel_to_qf,  -- TODO make it so that this prints something to messages instead of opening empty qf list if selection is empty
       ["ctrl-q"] = { fn = actions.file_sel_to_qf, prefix = "select-all" },
     },
   },
@@ -40,7 +40,13 @@ vim.keymap.set('n', '<leader>fW', fzf.grep_cWORD, { desc = 'Search WORD under cu
 vim.keymap.set('v', '<leader>fw', fzf.grep_visual, { desc = 'Search visual selection' })
 vim.keymap.set('v', '<leader>fW', fzf.grep_visual, { desc = 'Search visual selection' })
 -- vim.keymap.set('n', '<leader>fp', fzf.grep_project, { desc = 'Search project' })
+
 vim.keymap.set('n', '<leader>fr', fzf.lsp_references, { desc = 'Search LSP references' })
+
+local fzf_dw = function(sb) return function() fzf.diagnostics_workspace({ severity_limit = sb }) end end
+vim.keymap.set('n', '<leader>fde', fzf_dw(vim.diagnostic.severity.ERROR), { desc = 'Search workspace error diagnostics' })
+vim.keymap.set('n', '<leader>fdw', fzf_dw(vim.diagnostic.severity.WARN), { desc = 'Search workspace diagnostics >= warning' })
+vim.keymap.set('n', '<leader>fda', fzf_dw(vim.diagnostic.severity.HINT), { desc = 'Search all workspace diagnostics' })
 
 -- Search lines in current file
 vim.keymap.set('n', '<leader>fb', fzf.blines, { desc = 'Search lines in current file' })
