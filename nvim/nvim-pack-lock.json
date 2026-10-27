@@ -20,6 +20,11 @@
       "src": "https://github.com/neovim/nvim-lspconfig",
       "version": "'f6738ef'"
     },
+    "nvim-navic": {
+      "rev": "455808fd0fae06e6d70fadfd61432275db8f34ce",
+      "src": "https://github.com/SmiteshP/nvim-navic",
+      "version": "'455808f'"
+    },
     "tokyonight.nvim": {
       "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
       "src": "https://github.com/folke/tokyonight.nvim",

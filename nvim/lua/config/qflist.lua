@@ -1,7 +1,7 @@
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()
-    -- Map 'dd' in normal mode to delete the current quickfix item
+    -- Delete qflist item under cursor
     vim.keymap.set("n", "D", function()
       local qf_list = vim.fn.getqflist()
       local current_line = vim.fn.line(".")
@@ -19,6 +19,24 @@ vim.api.nvim_create_autocmd("FileType", {
     end, { buffer = true, desc = "Delete item from quickfix list" })
   end,
 })
+
+-- vim.keymap.set("n", "<leader>c", function()
+-- 	local qf_exists = false
+-- 	for _, win in pairs(vim.fn.getwininfo()) do
+-- 		if win["quickfix"] == 1 then
+-- 			qf_exists = true
+--             break
+-- 		end
+-- 	end
+-- 	if qf_exists == true then
+-- 		vim.cmd("cclose")
+-- 	elseif not vim.tbl_isempty(vim.fn.getqflist()) then
+-- 		vim.cmd("copen")
+-- 	else
+--         print("No quickfix list found")
+--     end
+-- end)
+
 
 -- TODO make another cmd that allows deleting the highlighted line in the quickfix list without being in the quickfix list.
 --     After adding that, see if the above cmd can be removed

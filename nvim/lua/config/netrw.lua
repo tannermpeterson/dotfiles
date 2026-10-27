@@ -1,83 +1,81 @@
-vim.g.netrw_liststyle = 3 -- tree view
-vim.g.netrw_banner = 0 -- hide the top banner
-vim.g.netrw_winsize = 25 -- fix the left split width
-vim.g.netrw_browse_split = 0 -- open files in the previous window
-vim.g.netrw_altfile = 1 -- keep the alternate file correct
-
-vim.keymap.set("n", "<leader>fe", ":Lexplore<cr>", { silent = true })
-
--- TODO learn all netrw commands
--- TODO is it possible to show diagnostics in netrw?
--- TODO add a keymap that open file explorer at file location (if this doesn't already exist)
--- TODO see if netrw auto-reloads and picks up new files, if not figure out how to do that
-
--- netrw's built-in `%` opens new files in the netrw window instead of
--- respecting `netrw_browse_split`. Override it to open in the previous window.
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = "netrw",
-	callback = function()
-		vim.keymap.set("n", "%", function()
-			local fname = vim.fn.input("Enter filename: ")
-			if fname == "" then
-				return
-			end
-
-			local dir = vim.b.netrw_curdir or vim.fn.getcwd()
-			local path = dir .. "/" .. fname
-
-			if vim.fn.filereadable(path) == 1 or vim.fn.isdirectory(path) == 1 then
-				vim.notify("Already exists: " .. fname, vim.log.levels.WARN)
-				return
-			end
-
-			if fname:match("/$") then
-				vim.fn.mkdir(path, "p")
-				vim.cmd("edit")
-			else
-				local f = io.open(path, "w")
-				if not f then
-					vim.notify("Failed to create: " .. fname, vim.log.levels.ERROR)
-					return
-				end
-				f:close()
-
-				local escaped = vim.fn.fnameescape(path)
-				if vim.fn.winnr("#") == 0 then
-					vim.cmd("edit " .. escaped)
-				else
-					vim.cmd("wincmd p")
-					vim.cmd("edit " .. escaped)
-				end
-			end
-		end, { buffer = true, silent = true, noremap = true, desc = "Create file in previous window" })
-	end,
-})
-
--- TODO make this work for netrw
--- This auto command reloads neo tree anytime that neovim gains focus so that new files will show up
--- vim.api.nvim_create_autocmd({
--- 	-- "BufEnter",
--- 	-- "CursorHold",
--- 	-- "CursorHoldI",
--- 	"FocusGained",
--- }, {
--- 	callback = function(ev)
--- 		if vim.api.nvim_get_mode() ~= "c" then
--- 			vim.cmd("checktime")
--- 		end
+-- vim.g.netrw_liststyle = 3 -- tree view
+-- vim.g.netrw_banner = 0 -- hide the top banner
+-- vim.g.netrw_winsize = 25 -- fix the left split width
+-- vim.g.netrw_keepj = ""
 --
--- 		local find_buffer_by_type = function(type)
--- 			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
--- 				local ft = vim.api.nvim_buf_get_option(buf, "filetype")
--- 				if ft == type then
--- 					return buf
--- 				end
--- 			end
--- 			return -1
--- 		end
--- 		if find_buffer_by_type("neo-tree") > 0 then
--- 			vim.cmd("Neotree show ")
--- 		end
--- 	end,
--- 	pattern = { "*" },
+-- vim.keymap.set("n", "<leader>fe", ":Lex<cr>", { silent = true })
+--
+-- vim.api.nvim_create_user_command("Lex", function()
+--     local win = vim.api.nvim_get_current_win()
+--
+--     vim.cmd("Lexplore")
+--
+--     vim.g.netrw_chgwin = vim.fn.win_id2win(win)
+-- end, {})
+--
+-- vim.api.nvim_create_autocmd({ "FileType", "BufEnter" }, {
+--   pattern = "netrw",
+--   callback = function()
+--     -- 'f' to create new file
+--     vim.keymap.set("n", "f", function()
+--       -- Get filename from user
+--       local filename = vim.fn.input("Create file: ")
+--       if filename == "" then return end
+--
+--       -- Get netrw's current directory path
+--       local curdir = vim.b.netrw_curdir
+--       local filepath = curdir .. "/" .. filename
+--
+--       -- Execute touch command and refresh netrw
+--       vim.fn.system({ "touch", filepath })
+--       -- vim.cmd([[call netrw#Call("NetrwRefresh", 1, b:netrw_curdir)]])  -- TODO make this work
+--     end, { buffer = true, remap = false, desc = "Create file without opening" })
+--
+--     -- 'F' to reveal in file explorer
+--     vim.keymap.set("n", "F", function()
+--       local entry = vim.fn["netrw#Call"]("NetrwGetWord")
+--       if not entry or entry == "" then
+--         return
+--       end
+--
+--       local curdir = vim.b.netrw_curdir or vim.fn.getcwd()
+--       local path = vim.fn.fnamemodify(curdir .. "/" .. entry, ":p")
+--
+--       if vim.fn.has("win32") == 1 then
+--         vim.fn.jobstart({ "explorer.exe", path }, { detach = true })
+--       elseif vim.fn.has("mac") == 1 then
+--         vim.fn.jobstart({ "open", "-R", path }, { detach = true })
+--       end
+--     end, { buffer = true, desc = "Reveal entry in system file explorer" })
+--
+--     -- <C-r> to refresh
+--     vim.keymap.set("n", "<C-r>", function()
+--       vim.cmd([[call netrw#Call("NetrwRefresh", 1, ".")]])  -- TODO make this work
+--     end, { remap = true, buffer = true, silent = true })
+--   end,
+-- })
+--
+-- -- Close netrw anytime cursor leaves its window
+-- vim.api.nvim_create_autocmd("WinLeave", {
+--   callback = function()
+--     local win = vim.api.nvim_get_current_win()
+--     local buf = vim.api.nvim_win_get_buf(win)
+--
+--     if vim.bo[buf].filetype ~= "netrw" then
+--       return
+--     end
+--
+--     vim.schedule(function()
+--       if not vim.api.nvim_win_is_valid(win) then
+--         return
+--       end
+--
+--       -- Only close if this window still contains Netrw
+--       local current_buf = vim.api.nvim_win_get_buf(win)
+--       if vim.bo[current_buf].filetype == "netrw"
+--           and vim.api.nvim_get_current_win() ~= win then
+--         pcall(vim.api.nvim_win_close, win, true)
+--       end
+--     end)
+--   end,
 -- })

@@ -9,22 +9,9 @@ vim.pack.add({
   { src = 'https://github.com/neovim/nvim-lspconfig', version = 'f6738ef' },
   { src = 'https://github.com/ibhagwan/fzf-lua', version = '6995a3f' },  -- TODO check out pickers?
   { src = 'https://github.com/junegunn/fzf', version = 'f7ae439' },
+  { src = 'https://github.com/SmiteshP/nvim-navic', version = '455808f' },
   { src = 'https://github.com/christoomey/vim-tmux-navigator', version = 'e41c431' }
 })
--- TODO use any of this?
---use("nvim-treesitter/nvim-treesitter", { run = ":TSUpdate" })
---use("mbbill/undotree")
---use("tpope/vim-fugitive")
---use({
---	"nvim-neo-tree/neo-tree.nvim",
---	branch = "v3.x",
---	requires = {
---		{ "nvim-lua/plenary.nvim" },
---		{ "nvim-tree/nvim-web-devicons" }, -- not strictly required, but recommended
---		{ "MunifTanjim/nui.nvim" },
---		-- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
---	},
---})
 
 
 ---------------------------------
@@ -82,6 +69,33 @@ vim.api.nvim_create_autocmd(
 	{ command = 'echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None', pattern = { "*" } }
 )
 
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
+  callback = function()
+    -- this will only filter out qflist when entering it, not opening it
+    if vim.bo.buftype == "terminal" or vim.bo.buftype == "quickfix" then
+      vim.opt_local.winbar = ""
+    else
+      vim.opt_local.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
+    end
+  end,
+})
+
+-- reset the winbar when opening qflist
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+      vim.opt_local.winbar = ""
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
+  pattern = { "*" },
+  callback = function()
+    if vim.opt.buftype:get() == "terminal" then
+      vim.cmd(":startinsert")
+    end
+  end,
+})
 
 ---------------------------------
 -- REMAPS -----------------------
@@ -90,8 +104,13 @@ vim.api.nvim_create_autocmd(
 -- NOTE: some remaps are in files under lua/config/
 
 -- TODO see how this feels
-vim.keymap.set("i", "<S-tab>", "<Esc>")
-vim.keymap.set("v", "<S-tab>", "<Esc>")
+-- vim.keymap.set("i", "<S-tab>", "<Esc>")
+-- vim.keymap.set("v", "<S-tab>", "<Esc>")
+
+vim.keymap.set("n", "<C-h>", "<C-w>h")
+vim.keymap.set("n", "<C-j>", "<C-w>j")
+vim.keymap.set("n", "<C-k>", "<C-w>k")
+vim.keymap.set("n", "<C-l>", "<C-w>l")
 
 -- move highlighted lines up and down
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
@@ -119,31 +138,20 @@ vim.keymap.set("n", "Q", "<nop>")
 
 vim.keymap.set("n", "<C-n>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-p>", "<cmd>cprev<CR>zz")
--- TODO are these needed?
 -- vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 -- vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 
-vim.keymap.set("n", "<leader>c", function()
-	local qf_exists = false
-	for _, win in pairs(vim.fn.getwininfo()) do
-		if win["quickfix"] == 1 then
-			qf_exists = true
-            break
-		end
-	end
-	if qf_exists == true then
-		vim.cmd("cclose")
-	elseif not vim.tbl_isempty(vim.fn.getqflist()) then
-		vim.cmd("copen")
-	else
-        print("No quickfix list found")
-    end
-end)
-
 vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help)
+-- Winterm has issues with pasting large amounts of text, so paste straight from clipboard
+vim.keymap.set("i", "<C-v>", "<C-r>+")
 
+vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
+vim.keymap.set("t", "<C-h>", [[<C-\><C-n><C-w>h]])
+vim.keymap.set("t", "<C-j>", [[<C-\><C-n><C-w>j]])
+vim.keymap.set("t", "<C-k>", [[<C-\><C-n><C-w>k]])
+vim.keymap.set("t", "<C-l>", [[<C-\><C-n><C-w>l]])
 
 ---------------------------------
 -- CONFIG -----------------------

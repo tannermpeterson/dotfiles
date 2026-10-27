@@ -1,3 +1,4 @@
+-- TODO is this file needed?
 -- local pms = vim.api.nvim_get_hl(0, { name = "PmenuSel", link = false })
 -- local dir = vim.api.nvim_get_hl(0, { name = "Directory", link = false })
 -- vim.api.nvim_set_hl(0, "StlGit", { fg = dir.fg, bg = pms.bg })

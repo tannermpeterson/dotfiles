@@ -16,12 +16,21 @@ caps.textDocument.completion.completionItem.resolveSupport = {
     }
 }
 
+local navic = require("nvim-navic")
+
+local on_attach = function(client, bufnr)
+    if client.server_capabilities.documentSymbolProvider then
+        navic.attach(client, bufnr)
+    end
+end
+
 vim.lsp.config("clangd", {
     capabilities = caps,
     cmd = {
         "clangd",
         "--completion-style=detailed"
     },
+    on_attach = on_attach,
     filetypes = { "c", "cpp" },
     root_markers = { ".clangd", "compile_commands.json", ".git" }
     -- Other opts set in .clangd file
@@ -39,7 +48,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         local client = assert(vim.lsp.get_client_by_id(event.data.client_id), "Client ID invalid")
 
         -- enable LSP completion
-        if client and client:supports_method("textDocument/completion", event.buf) then
+        if client:supports_method("textDocument/completion", event.buf) then
             vim.lsp.completion.enable(true, client.id, event.buf, {
                 autotrigger = true,
                 convert = function(item)
