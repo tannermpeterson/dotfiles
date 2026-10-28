@@ -11,6 +11,7 @@ vim.pack.add({
   { src = 'https://github.com/junegunn/fzf', version = 'f7ae439' },
   { src = 'https://github.com/SmiteshP/nvim-navic', version = '455808f' },
   { src = 'https://github.com/christoomey/vim-tmux-navigator', version = 'e41c431' }
+  -- TODO tree plugin?
 })
 
 
@@ -64,10 +65,15 @@ vim.o.winborder = "rounded"
 vim.o.pummaxwidth = 70
 vim.o.pumheight = 7
 
+-- log warning whenever neovim detects that a file in an open buf changed on disk
 vim.api.nvim_create_autocmd(
 	{ "FileChangedShellPost" },
 	{ command = 'echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None', pattern = { "*" } }
 )
+-- reload files when entering buf (requires autoread)
+vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained" }, {
+  command = "checktime",
+})
 
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
   callback = function()
@@ -138,8 +144,27 @@ vim.keymap.set("n", "Q", "<nop>")
 
 vim.keymap.set("n", "<C-n>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-p>", "<cmd>cprev<CR>zz")
--- vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
--- vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
+
+-- reveal cur file in file explorer or finder
+vim.keymap.set("n", "<leader><C-f>", function()
+  -- abs path of cur file
+  local filepath = vim.api.nvim_buf_get_name(0)
+
+  -- Do nothing if it's an empty buffer, terminal, or special file type
+  if filepath == "" or vim.bo.buftype ~= "" then
+    vim.notify("No valid file in current buffer", vim.log.levels.WARN)
+    return
+  end
+
+  if vim.fn.has("win32") == 1 then
+    -- TODO is changing slashes needed?
+    -- Normalize slashes to backslashes for Windows Explorer stability
+    -- filepath = filepath:gsub("/", "\\")
+    vim.fn.jobstart({ "explorer.exe", "/select", filepath }, { detach = true })
+  elseif vim.fn.has("mac") == 1 then
+    vim.fn.jobstart({ "open", "-R", filepath }, { detach = true })
+  end
+end, { desc = "Reveal cur file in file explorer or finder" })
 
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 
@@ -147,11 +172,13 @@ vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help)
 -- Winterm has issues with pasting large amounts of text, so paste straight from clipboard
 vim.keymap.set("i", "<C-v>", "<C-r>+")
 
+-- term
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 vim.keymap.set("t", "<C-h>", [[<C-\><C-n><C-w>h]])
 vim.keymap.set("t", "<C-j>", [[<C-\><C-n><C-w>j]])
 vim.keymap.set("t", "<C-k>", [[<C-\><C-n><C-w>k]])
 vim.keymap.set("t", "<C-l>", [[<C-\><C-n><C-w>l]])
+vim.keymap.set("t", "<C-v>", "<C-r>+")  -- TODO test this on windows
 
 ---------------------------------
 -- CONFIG -----------------------
@@ -159,6 +186,4 @@ vim.keymap.set("t", "<C-l>", [[<C-\><C-n><C-w>l]])
 
 require('config.fzf')
 require('config.lsp_setup')
-require('config.netrw')
 require('config.qflist')
-require('config.statusline')
